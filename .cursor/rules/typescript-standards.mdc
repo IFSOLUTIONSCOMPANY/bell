@@ -1,0 +1,133 @@
+---
+description: Présente les conventions et meilleures pratiques pour l'utilisation de TypeScript, incluant la définition des types, interfaces et patterns recommandés.
+globs: 
+alwaysApply: false
+---
+## 2. typescript-standards.mdc
+
+```markdown
+# Standards TypeScript
+
+## Principes Généraux
+
+- Utiliser TypeScript pour tous les fichiers de code
+- Favoriser les interfaces sur les types pour les formes d'objets
+- Éviter les énumérations (enums); utiliser des types littéraux ou des maps
+- Éviter l'utilisation de `any` ou `unknown`
+- Éviter les assertions de type avec `as` ou `!`
+
+## Définition des Types
+
+### Interfaces vs Types
+
+```typescript
+// Préférer les interfaces pour les objets
+interface Guest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  roomNumber?: string;
+  checkIn: string;
+  checkOut: string;
+  status: 'pending' | 'checked-in' | 'checked-out';
+}
+
+// Utiliser les types pour les unions, intersections, et types utilitaires
+type GuestStatus = 'pending' | 'checked-in' | 'checked-out';
+type GuestWithRoom = Guest & { roomNumber: string };
+
+
+// Au lieu de:
+enum RoomType {
+  Single = 'SINGLE',
+  Double = 'DOUBLE',
+  Suite = 'SUITE'
+}
+
+// Préférer:
+type RoomType = 'SINGLE' | 'DOUBLE' | 'SUITE';
+
+// Ou utiliser un objet pour les valeurs constantes:
+const ROOM_TYPES = {
+  SINGLE: 'SINGLE',
+  DOUBLE: 'DOUBLE',
+  SUITE: 'SUITE'
+} as const;
+
+type RoomType = typeof ROOM_TYPES[keyof typeof ROOM_TYPES];
+
+// Définir explicitement les interfaces pour les props
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+// Utiliser la destructuration dans la signature de fonction
+function Button({
+  variant = 'primary',
+  size = 'md',
+  isLoading = false,
+  leftIcon,
+  rightIcon,
+  children,
+  onClick,
+  className = ''
+}: ButtonProps) {
+  // Implémentation
+}
+
+
+// Utiliser des generics pour les composants et fonctions réutilisables
+interface SelectProps<T> {
+  options: T[];
+  value: T;
+  onChange: (value: T) => void;
+  getLabel: (option: T) => string;
+  getValue: (option: T) => string | number;
+}
+
+function Select<T>({
+  options,
+  value,
+  onChange,
+  getLabel,
+  getValue
+}: SelectProps<T>) {
+  // Implémentation
+}
+
+
+// Tirer parti des types utilitaires de TypeScript
+type OptionalGuest = Partial<Guest>;
+type GuestKeys = keyof Guest;
+type ReadonlyGuest = Readonly<Guest>;
+
+
+// Types pour les événements DOM
+const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  // Implémentation
+};
+
+const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Implémentation
+};
+
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Implémentation
+};
+
+
+// Types pour useState
+const [isOpen, setIsOpen] = useState<boolean>(false);
+const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+
+// Types pour useRef
+const inputRef = useRef<HTMLInputElement>(null);

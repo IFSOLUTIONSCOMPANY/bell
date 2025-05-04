@@ -1,0 +1,36 @@
+---
+description: Définit l'implémentation du système de thème avec TailwindCSS pour assurer une expérience utilisateur visuellement cohérente et adaptable.
+globs: 
+alwaysApply: false
+---
+# Theming avec TailwindCSS
+
+## Variables CSS
+
+- Définir les variables dans styles/theme.css
+- Structurer les variables par catégorie (couleurs, espacement, etc.)
+- Inclure des variantes pour le mode sombre
+
+## Configuration Tailwind
+
+- Étendre la configuration Tailwind avec les variables personnalisées
+- Utiliser l'extension de thème pour les couleurs, espacements, etc.
+- Définir des plugins personnalisés si nécessaire
+
+## Utilisation des Classes
+
+- Utiliser directement les classes d'utilitaires dans les composants
+- Extraire les modèles communs vers la composition de composants
+- Suivre la conception responsive mobile-first
+
+## Cohérence du Thème
+
+- Utiliser des variables CSS pour les valeurs de thème
+- Référencer les couleurs et styles du thème via la configuration Tailwind
+- Éviter de coder en dur les couleurs ou tailles
+
+## Création de Composants
+
+- Pour le styling complexe, envisager les modules CSS
+- Maintenir un espacement et une typographie cohérents
+- Utiliser les préfixes de variants pour les différents états

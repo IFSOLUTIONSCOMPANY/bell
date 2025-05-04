@@ -1,0 +1,282 @@
+---
+description: Explique l'implémentation de Zustand et TanStack Query pour gérer efficacement l'état global et les interactions avec les API dans l'application hôtelière.
+globs: 
+alwaysApply: false
+---
+## 3. state-management.mdc
+
+```markdown
+# Gestion d'État avec Zustand et TanStack Query
+
+## Principes de Gestion d'État
+
+1. **Localité** - Maintenir l'état aussi local que possible
+2. **Sources Uniques de Vérité** - Éviter la duplication de l'état
+3. **Immutabilité** - Ne jamais modifier directement l'état
+4. **Séparation** - Séparer l'état local, l'état de l'application et l'état du serveur
+
+## Zustand pour l'État Global
+
+Zustand est utilisé pour gérer l'état global de l'application, comme l'authentification, les préférences utilisateur, et d'autres états partagés entre plusieurs composants.
+
+### Structure des Stores
+
+```typescript
+// store/guest-store.ts
+import { create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
+import type { Guest } from '@/types/guest';
+
+interface GuestStore {
+  // État
+  guests: Guest[];
+  selectedGuestId: string | null;
+  isLoading: boolean;
+  
+  // Actions
+  selectGuest: (id: string | null) => void;
+  addGuest: (guest: Guest) => void;
+  updateGuest: (id: string, updates: Partial<Guest>) => void;
+  removeGuest: (id: string) => void;
+  
+  // Sélecteurs dérivés
+  getSelectedGuest: () => Guest | undefined;
+}
+
+export const useGuestStore = create<GuestStore>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        // État initial
+        guests: [],
+        selectedGuestId: null,
+        isLoading: false,
+        
+        // Actions
+        selectGuest: (id) => set({ selectedGuestId: id }),
+        
+        addGuest: (guest) => set((state) => ({ 
+          guests: [...state.guests, guest] 
+        })),
+        
+        updateGuest: (id, updates) => set((state) => ({
+          guests: state.guests.map((guest) => 
+            guest.id === id ? { ...guest, ...updates } : guest
+          )
+        })),
+        
+        removeGuest: (id) => set((state) => ({
+          guests: state.guests.filter((guest) => guest.id !== id),
+          selectedGuestId: state.selectedGuestId === id ? null : state.selectedGuestId
+        })),
+        
+        // Sélecteurs dérivés
+        getSelectedGuest: () => {
+          const { guests, selectedGuestId } = get();
+          return guests.find((guest) => guest.id === selectedGuestId);
+        },
+      }),
+      { name: 'guest-store' }
+    )
+  )
+);
+```txt
+Bonnes Pratiques Zustand
+
+Actions Atomiques - Définir des actions petites et ciblées
+Immutabilité - Toujours retourner un nouvel état, ne jamais modifier l'état existant
+Sélecteurs - Utiliser des sélecteurs pour accéder à l'état afin de minimiser les re-rendus
+Middlewares - Utiliser devtools pour le débogage et persist pour la persistance
+Organisation - Diviser les stores logiquement par domaine d'affaires
+```
+```ts
+// Utilisation de base
+function GuestList() {
+  const guests = useGuestStore((state) => state.guests);
+  const isLoading = useGuestStore((state) => state.isLoading);
+  
+  if (isLoading) return <div>Chargement...</div>;
+  
+  return (
+    <ul>
+      {guests.map((guest) => (
+        <li key={guest.id}>{guest.firstName} {guest.lastName}</li>
+      ))}
+    </ul>
+  );
+}
+
+// Utilisation d'actions
+function GuestForm() {
+  const addGuest = useGuestStore((state) => state.addGuest);
+  
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour collecter les données du formulaire
+    addGuest(newGuest);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Champs de formulaire */}
+    </form>
+  );
+}
+```
+
+```txt
+TanStack Query pour l'État du Serveur
+TanStack Query (React Query) est utilisé pour gérer l'état du serveur: récupération, mise en cache, synchronisation et mise à jour des données du serveur.
+Structure des Queries
+```
+```ts
+// queries/use-guests.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Guest } from '@/types/guest';
+import { fetchGuests, fetchGuest, createGuest, updateGuest, deleteGuest } from '@/lib/api';
+
+// Clés de requête
+export const guestKeys = {
+  all: ['guests'] as const,
+  lists: () => [...guestKeys.all, 'list'] as const,
+  list: (filters: Record<string, unknown>) => [...guestKeys.lists(), filters] as const,
+  details: () => [...guestKeys.all, 'detail'] as const,
+  detail: (id: string) => [...guestKeys.details(), id] as const,
+};
+
+// Hook pour récupérer tous les invités
+export function useGuests(filters?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: filters ? guestKeys.list(filters) : guestKeys.lists(),
+    queryFn: () => fetchGuests(filters),
+  });
+}
+
+// Hook pour récupérer un invité par ID
+export function useGuest(id: string) {
+  return useQuery({
+    queryKey: guestKeys.detail(id),
+    queryFn: () => fetchGuest(id),
+    enabled: !!id, // N'exécuter que si l'ID existe
+  });
+}
+
+// Hook pour créer un invité
+export function useCreateGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createGuest,
+    onSuccess: () => {
+      // Invalider et rafraîchir les listes d'invités
+      queryClient.invalidateQueries({ queryKey: guestKeys.lists() });
+    },
+  });
+}
+
+// Hook pour mettre à jour un invité
+export function useUpdateGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Guest> }) => updateGuest(id, data),
+    onSuccess: (_, variables) => {
+      // Invalider et rafraîchir les requêtes pertinentes
+      queryClient.invalidateQueries({ queryKey: guestKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: guestKeys.lists() });
+    },
+  });
+}
+
+// Hook pour supprimer un invité
+export function useDeleteGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteGuest,
+    onSuccess: (_, id) => {
+      // Invalider et rafraîchir les requêtes pertinentes
+      queryClient.invalidateQueries({ queryKey: guestKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: guestKeys.lists() });
+    },
+  });
+}
+
+
+// app/providers.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+
+// Utilisation des requêtes
+function GuestList() {
+  const { data: guests, isLoading, error } = useGuests();
+  
+  if (isLoading) return <div>Chargement...</div>;
+  if (error) return <div>Erreur: {error.message}</div>;
+  
+  return (
+    <ul>
+      {guests.map((guest) => (
+        <li key={guest.id}>{guest.firstName} {guest.lastName}</li>
+      ))}
+    </ul>
+  );
+}
+
+// Utilisation des mutations
+function GuestForm() {
+  const createGuestMutation = useCreateGuest();
+  
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Logique pour collecter les données du formulaire
+    createGuestMutation.mutate(newGuest);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Champs de formulaire */}
+      {createGuestMutation.isPending && <div>Création en cours...</div>}
+      {createGuestMutation.isError && <div>Erreur: {createGuestMutation.error.message}</div>}
+    </form>
+  );
+}
+
+
+
+// Exemple d'utilisation combinée pour la synchronisation
+function useGuestSync() {
+  const setGuests = useGuestStore((state) => state.setGuests);
+  const { data } = useGuests();
+  
+  useEffect(() => {
+    if (data) {
+      setGuests(data);
+    }
+  }, [data, setGuests]);
+}
+
+// À utiliser dans un composant de haut niveau
+function GuestProvider({ children }: { children: React.ReactNode }) {
+  useGuestSync();
+  return <>{children}</>;
+}

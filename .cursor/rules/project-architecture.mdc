@@ -1,0 +1,108 @@
+---
+description: Établit la structure des dossiers et l'organisation modulaire du projet, assurant une séparation claire des responsabilités et facilitant l'évolutivité future.
+globs: 
+alwaysApply: false
+---
+# Architecture du Projet Hôtelier
+
+## Structure des Dossiers
+src/
+├── app/                       # Next.js App Router
+│   ├── (auth)/                # Routes d'authentification
+│   ├── (dashboard)/           # Routes du tableau de bord
+│   ├── (guest)/               # Routes de gestion des clients
+│   ├── api/                   # Routes API
+│   │   └── [service]/         # Routes API pour chaque service
+│   ├── globals.css            # Styles globaux
+│   └── layout.tsx             # Layout racine
+├── components/                # Composants partagés
+│   ├── ui/                    # Composants UI de base
+│   │   ├── button/
+│   │   ├── card/
+│   │   ├── input/
+│   │   └── ...
+│   ├── common/                # Composants composites
+│   │   ├── activity-card/
+│   │   ├── service-selector/
+│   │   └── ...
+│   ├── layout/                # Composants de mise en page
+│   │   ├── sidebar/
+│   │   ├── header/
+│   │   └── ...
+│   └── modules/               # Composants spécifiques aux fonctionnalités
+│       ├── housekeeping/
+│       ├── restaurant/
+│       └── ...
+├── lib/                       # Fonctions utilitaires
+│   ├── utils.ts
+│   ├── constants.ts
+│   └── ...
+├── hooks/                     # Hooks React personnalisés
+│   ├── use-debounce.ts
+│   ├── use-media-query.ts
+│   └── ...
+├── types/                     # Définitions de types TypeScript
+│   ├── guest.ts
+│   ├── room.ts
+│   └── ...
+├── styles/                    # Styles additionnels
+│   └── theme.css
+├── context/                   # Providers de contexte React
+│   └── theme-context.tsx
+├── store/                     # Magasins Zustand
+│   ├── guest-store.ts
+│   ├── reservation-store.ts
+│   └── ...
+├── queries/                   # Queries TanStack
+│   ├── use-guests.ts
+│   ├── use-rooms.ts
+│   └── ...
+└── data/                      # Données mockées pour le développement
+├── guests.ts
+├── services.ts
+└── ...
+
+## Principes d'Architecture
+
+1. **Modularité** - Chaque module doit être indépendant avec une API clairement définie
+2. **Séparation des Préoccupations** - Séparer la logique métier de l'interface utilisateur
+3. **Réutilisabilité** - Concevoir des composants pour une utilisation dans différents contextes
+4. **Évolutivité** - Prévoir la croissance future et faciliter l'extension
+
+## Convention de Nommage
+
+- **Fichiers et Répertoires**: kebab-case (`guest-card.tsx`, `room-service/`)
+- **Composants React**: PascalCase (`GuestCard`)
+- **Hooks**: Préfixe `use` en camelCase (`useGuestData`)
+- **Magasins Zustand**: Suffixe `Store` en camelCase (`useGuestStore`)
+- **Queries TanStack**: Préfixe `use` en camelCase (`useGuests`, `useRooms`)
+
+## Importations et Exportations
+
+- Favoriser les exportations nommées pour les composants et fonctions
+- Utiliser des fichiers d'index (barrel exports) pour simplifier les importations
+- Éviter les importations circulaires
+
+## Structuration des Composants
+
+```typescript
+// Exemple de structure de composant
+// guest-card/guest-card.tsx
+
+import { useState } from 'react';
+import type { Guest } from '@/types/guest';
+import { Button } from '@/components/ui/button';
+
+interface GuestCardProps {
+  guest: Guest;
+  onEdit?: (guest: Guest) => void;
+  onDelete?: (id: string) => void;
+}
+
+export function GuestCard({ 
+  guest, 
+  onEdit, 
+  onDelete 
+}: GuestCardProps) {
+  // Implémentation
+}

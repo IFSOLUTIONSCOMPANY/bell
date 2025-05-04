@@ -1,0 +1,37 @@
+---
+description: Définit les conventions de nommage, la structure des fichiers et les pratiques de codage pour maintenir la cohérence et la lisibilité du code à travers le projet hôtelier.Définit les conventions de nommage, la structure des fichiers et les pratiques de codage pour maintenir la cohérence et la lisibilité du code à travers le projet hôtelier.
+globs: 
+alwaysApply: false
+---
+# Standards de Codage
+
+## Convention de Nommage
+
+- **Fichiers et répertoires**: Utiliser le kebab-case (ex: `activity-card.tsx`)
+- **Composants React**: Utiliser le PascalCase (ex: `ActivityCard`)
+- **Fonctions et variables**: Utiliser le camelCase (ex: `getGuestData()`)
+- **Constantes**: Utiliser le UPPER_SNAKE_CASE (ex: `MAX_GUESTS`)
+- **Types et interfaces**: Utiliser le PascalCase et préfixer les interfaces avec "I" (ex: `type GuestData`, `interface IButtonProps`)
+
+## Structure des Composants
+
+- Chaque composant doit être dans son propre répertoire
+- Utiliser index.ts pour exporter des composants
+- Structure recommandée:
+button/
+├── button.tsx
+├── button.test.tsx (optionnel)
+├── types.ts (si nécessaire)
+└── index.ts
+
+## Props et Interfaces
+
+- Définir des interfaces claires pour les props
+- Utiliser des valeurs par défaut appropriées
+- Destructurer les props dans la signature de fonction
+
+## Exportations
+
+- Exporter les composants en tant qu'exportation par défaut
+- Exporter les types et interfaces comme exportations nommées
+- Utiliser des fichiers barrel (index.ts) pour simplifier les importations

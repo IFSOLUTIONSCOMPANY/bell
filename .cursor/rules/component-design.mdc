@@ -1,0 +1,383 @@
+---
+description: Fournit les directives pour créer des composants React réutilisables, accessibles et maintenables suivant les principes de composition et de responsabilité unique.
+globs: 
+alwaysApply: false
+---
+## 4. component-design.mdc
+
+```markdown
+# Design de Composants
+
+## Principes de Design
+
+1. **Composition** - Construire des composants complexes à partir de composants simples
+2. **Responsabilité Unique** - Chaque composant doit avoir une seule responsabilité
+3. **Props Explicites** - Définir des interfaces claires pour les props
+4. **Réutilisabilité** - Concevoir pour la réutilisation dans différents contextes
+
+## Structure de Fichiers des Composants
+
+component-name/
+├── component-name.tsx       # Composant principal
+├── sub-component.tsx        # Sous-composants (si nécessaire)
+├── types.ts                 # Types spécifiques au composant
+├── utils.ts                 # Utilitaires spécifiques au composant
+└── index.ts                 # Exports
+## Modèle de Composant
+
+```typescript
+// button/button.tsx
+import { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+import type { ButtonProps } from './types';
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button({
+    variant = 'primary',
+    size = 'md',
+    isLoading = false,
+    leftIcon,
+    rightIcon,
+    children,
+    className,
+    disabled,
+    ...props
+  }, ref) {
+    // Classes pour les variantes
+    const variantClasses = {
+      primary: 'bg-primary text-white hover:bg-primary-dark',
+      secondary: 'bg-accent text-white hover:bg-accent-light',
+      outline: 'border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-neutral-200',
+      ghost: 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700',
+    };
+    
+    // Classes pour les tailles
+    const sizeClasses = {
+      sm: 'h-8 px-3 text-sm',
+      md: 'h-10 px-4 text-base',
+      lg: 'h-12 px-5 text-base',
+    };
+    
+    // Combinaison des classes
+    const buttonClasses = cn(
+      'rounded-full font-medium transition-colors flex items-center justify-center',
+      variantClasses[variant],
+      sizeClasses[size],
+      isLoading && 'opacity-70 cursor-not-allowed',
+      className
+    );
+    
+    return (
+      <button
+        ref={ref}
+        className={buttonClasses}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {isLoading && (
+          <svg 
+            className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24"
+          >
+            <circle 
+              className="opacity-25" 
+              cx="12" 
+              cy="12" 
+              r="10" 
+              stroke="currentColor" 
+              strokeWidth="4"
+            />
+            <path 
+              className="opacity-75" 
+              fill="currentColor" 
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        )}
+        {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+        <span>{children}</span>
+        {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
+      </button>
+    );
+  }
+);
+
+// button/types.ts
+import { ButtonHTMLAttributes } from 'react';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  isLoading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}
+
+// button/index.ts
+export { Button } from './button';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
+
+// select/select.tsx
+import { forwardRef, createContext, useContext, useState } from 'react';
+import { cn } from '@/lib/utils';
+import type { SelectProps, SelectContextType } from './types';
+
+// Contexte pour partager l'état entre les composants
+const SelectContext = createContext<SelectContextType | undefined>(undefined);
+
+function useSelectContext() {
+  const context = useContext(SelectContext);
+  if (!context) {
+    throw new Error('useSelectContext must be used within a Select component');
+  }
+  return context;
+}
+
+// Composant racine
+export const Select = forwardRef<HTMLDivElement, SelectProps>(
+  function Select({
+    children,
+    value,
+    onChange,
+    placeholder = 'Sélectionner une option',
+    disabled = false,
+    className,
+    ...props
+  }, ref) {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    const handleToggle = () => {
+      if (!disabled) {
+        setIsOpen(!isOpen);
+      }
+    };
+    
+    const handleSelect = (newValue: string) => {
+      onChange?.(newValue);
+      setIsOpen(false);
+    };
+    
+    return (
+      <SelectContext.Provider
+        value={{ value, onChange: handleSelect, isOpen, setIsOpen, disabled }}
+      >
+        <div
+          ref={ref}
+          className={cn(
+            'relative w-full',
+            disabled && 'opacity-50 cursor-not-allowed',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </div>
+      </SelectContext.Provider>
+    );
+  }
+);
+
+// Sous-composant: Trigger
+export const SelectTrigger = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  function SelectTrigger({ className, ...props }, ref) {
+    const { value, isOpen, disabled } = useSelectContext();
+    
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          'flex items-center justify-between w-full px-3 py-2 text-left bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary',
+          isOpen && 'ring-2 ring-primary',
+          className
+        )}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        aria-expanded={isOpen}
+        {...props}
+      >
+        {value || <span className="text-neutral-500">Sélectionner une option</span>}
+        <svg
+          className={cn(
+            'w-5 h-5 ml-2 -mr-1 text-neutral-400 transition-transform',
+            isOpen && 'transform rotate-180'
+          )}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+    );
+  }
+);
+
+// Autres sous-composants: Options, Option, etc.
+// ...
+
+// Utilisation
+function RoomTypeSelector() {
+  const [roomType, setRoomType] = useState('');
+  
+  return (
+    <Select value={roomType} onChange={setRoomType}>
+      <SelectTrigger />
+      <SelectOptions>
+        <SelectOption value="single">Chambre Simple</SelectOption>
+        <SelectOption value="double">Chambre Double</SelectOption>
+        <SelectOption value="suite">Suite</SelectOption>
+      </SelectOptions>
+    </Select>
+  );
+}
+
+// Utiliser le rendu conditionnel de manière concise
+function NotificationBadge({ count }: { count: number }) {
+  if (count === 0) return null;
+  
+  return (
+    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+
+// Utiliser les render props pour personnaliser le rendu
+interface CollapsibleProps {
+  title: React.ReactNode;
+  children: React.ReactNode;
+  renderIcon?: (isOpen: boolean) => React.ReactNode;
+}
+
+function Collapsible({
+  title,
+  children,
+  renderIcon = (isOpen) => (
+    <svg
+      className={`w-5 h-5 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  ),
+}: CollapsibleProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="border border-neutral-200 dark:border-neutral-700 rounded-md">
+      <button
+        type="button"
+        className="flex items-center justify-between w-full px-4 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <span>{title}</span>
+        {renderIcon(isOpen)}
+      </button>
+      {isOpen && (
+        <div className="px-4 py-2 border-t border-neutral-200 dark:border-neutral-700">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// Assurer l'accessibilité des composants
+function Dialog({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  
+  // Fermeture avec Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
+  
+  // Focus sur le dialog à l'ouverture
+  useEffect(() => {
+    if (isOpen && dialogRef.current) {
+      const focusableElements = dialogRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      if (focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      }
+    }
+  }, [isOpen]);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true" />
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        className="relative z-50 w-full max-w-md p-6 mx-auto bg-white dark:bg-neutral-800 rounded-lg shadow-xl"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 id="dialog-title" className="text-lg font-medium">{title}</h2>
+          <button
+            type="button"
+            className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div>{children}</div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,400 @@
+---
+description: Détaille les meilleures pratiques pour l'utilisation de TanStack Query dans la récupération, la mise en cache et la mise à jour des données provenant des API.
+globs: 
+alwaysApply: false
+---
+## 5. data-fetching.mdc
+
+```markdown
+# Récupération de Données avec TanStack Query
+
+## Configuration Initiale
+
+```typescript
+// app/providers.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+// Créer un client avec des options par défaut
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+
+// app/layout.tsx
+import { Providers } from './providers';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="fr">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+
+// queries/keys.ts
+export const queryKeys = {
+  guests: {
+    all: ['guests'] as const,
+    lists: () => [...queryKeys.guests.all, 'list'] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.guests.lists(), filters] as const,
+    details: () => [...queryKeys.guests.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.guests.details(), id] as const,
+  },
+  rooms: {
+    all: ['rooms'] as const,
+    lists: () => [...queryKeys.rooms.all, 'list'] as const,
+    list: (filters: Record<string, unknown>) => [...queryKeys.rooms.lists(), filters] as const,
+    details: () => [...queryKeys.rooms.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.rooms.details(), id] as const,
+  },
+  // Autres entités...
+};
+
+// queries/use-guests.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Guest } from '@/types/guest';
+import { fetchGuests, fetchGuest, createGuest, updateGuest, deleteGuest } from '@/lib/api';
+import { queryKeys } from './keys';
+
+// Requête pour récupérer tous les invités
+export function useGuests(filters?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: filters ? queryKeys.guests.list(filters) : queryKeys.guests.lists(),
+    queryFn: () => fetchGuests(filters),
+  });
+}
+
+// Requête pour récupérer un invité spécifique
+export function useGuest(id: string) {
+  return useQuery({
+    queryKey: queryKeys.guests.detail(id),
+    queryFn: () => fetchGuest(id),
+    enabled: !!id, // Activer seulement si l'ID est présent
+  });
+}
+
+// Mutation pour créer un invité
+export function useCreateGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createGuest,
+    onSuccess: (newGuest) => {
+      // Invalider les requêtes pertinentes
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.lists() });
+      
+      // Mettre à jour le cache immédiatement (optimiste)
+      queryClient.setQueryData(
+        queryKeys.guests.lists(),
+        (oldData: Guest[] = []) => [...oldData, newGuest]
+      );
+    },
+  });
+}
+
+// Mutation pour mettre à jour un invité
+export function useUpdateGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Guest> }) => updateGuest(id, data),
+    onSuccess: (updatedGuest, { id }) => {
+      // Invalider les requêtes pertinentes
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.lists() });
+      
+      // Mettre à jour le cache immédiatement (optimiste)
+      queryClient.setQueryData(
+        queryKeys.guests.detail(id),
+        updatedGuest
+      );
+    },
+  });
+}
+
+// Mutation pour supprimer un invité
+export function useDeleteGuest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteGuest,
+    onSuccess: (_, id) => {
+      // Invalider les requêtes pertinentes
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.lists() });
+      
+      // Mettre à jour le cache immédiatement (optimiste)
+      queryClient.setQueryData(
+        queryKeys.guests.lists(),
+        (oldData: Guest[] = []) => oldData.filter(guest => guest.id !== id)
+      );
+    },
+  });
+}
+
+// Composant avec gestion complète des états
+function GuestDetails({ id }: { id: string }) {
+  const {
+    data: guest,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+  } = useGuest(id);
+  
+  if (isLoading) {
+    return <div className="p-4">Chargement des détails de l'invité...</div>;
+  }
+  
+  if (isError) {
+    return (
+      <div className="p-4 text-red-500">
+        Erreur: {error instanceof Error ? error.message : 'Une erreur est survenue'}
+      </div>
+    );
+  }
+  
+  if (!guest) {
+    return <div className="p-4">Invité non trouvé</div>;
+  }
+  
+  return (
+    <div className="p-4 relative">
+      {isFetching && (
+        <div className="absolute top-2 right-2">
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
+      
+      <h2 className="text-2xl font-bold mb-4">
+        {guest.firstName} {guest.lastName}
+      </h2>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <h3 className="text-sm text-neutral-500">Email</h3>
+          <p>{guest.email}</p>
+        </div>
+        <div>
+          <h3 className="text-sm text-neutral-500">Téléphone</h3>
+          <p>{guest.phone}</p>
+        </div>
+        <div>
+          <h3 className="text-sm text-neutral-500">Chambre</h3>
+          <p>{guest.roomNumber || 'Non assignée'}</p>
+        </div>
+        <div>
+          <h3 className="text-sm text-neutral-500">Statut</h3>
+          <p>{guest.status}</p>
+        </div>
+        <div>
+          <h3 className="text-sm text-neutral-500">Check-in</h3>
+          <p>{new Date(guest.checkIn).toLocaleDateString()}</p>
+        </div>
+        <div>
+          <h3 className="text-sm text-neutral-500">Check-out</h3>
+          <p>{new Date(guest.checkOut).toLocaleDateString()}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// Exemple de requête infinie pour les messages de chat
+function useChatMessages(roomId: string) {
+  return useInfiniteQuery({
+    queryKey: ['chat', roomId, 'messages'],
+    queryFn: ({ pageParam = 0 }) => fetchChatMessages(roomId, pageParam, 20),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  });
+}
+
+// Utilisation dans un composant
+function ChatRoom({ roomId }: { roomId: string }) {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+  } = useChatMessages(roomId);
+  
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto">
+        {status === 'pending' ? (
+          <div className="p-4 text-center">Chargement des messages...</div>
+        ) : status === 'error' ? (
+          <div className="p-4 text-center text-red-500">Erreur lors du chargement des messages</div>
+        ) : (
+          <>
+            {hasNextPage && (
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="w-full p-2 text-neutral-500 hover:text-neutral-700"
+              >
+                {isFetchingNextPage ? 'Chargement...' : 'Charger plus de messages'}
+              </button>
+            )}
+            
+            <div className="space-y-4 p-4">
+              {data.pages.flatMap((page) => page.messages).map((message) => (
+                <div
+                  key={message.id}
+                  className={`p-3 rounded-lg ${
+                    message.isCurrentUser
+                      ? 'bg-primary text-white ml-auto'
+                      : 'bg-neutral-100 dark:bg-neutral-700 mr-auto'
+                  }`}
+                >
+                  {message.content}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Formulaire de message */}
+    </div>
+  );
+}
+
+
+// Mises à jour optimistes pour une meilleure UX
+function useToggleGuestStatus(guestId: string) {
+  const queryClient = useQueryClient();
+  const previousGuest = queryClient.getQueryData<Guest>(queryKeys.guests.detail(guestId));
+  
+  return useMutation({
+    mutationFn: (newStatus: 'pending' | 'checked-in' | 'checked-out') =>
+      updateGuest(guestId, { status: newStatus }),
+    
+    // Mise à jour optimiste avant l'API
+    onMutate: async (newStatus) => {
+      // Annuler les requêtes en cours
+      await queryClient.cancelQueries({ queryKey: queryKeys.guests.detail(guestId) });
+      
+      // Sauvegarder l'état précédent
+      const previousGuest = queryClient.getQueryData<Guest>(queryKeys.guests.detail(guestId));
+      
+      // Optimistic update
+      if (previousGuest) {
+        queryClient.setQueryData(
+          queryKeys.guests.detail(guestId),
+          { ...previousGuest, status: newStatus }
+        );
+      }
+      
+      return { previousGuest };
+    },
+    
+    // En cas d'erreur, restaurer l'état précédent
+    onError: (error, newStatus, context) => {
+      if (context?.previousGuest) {
+        queryClient.setQueryData(
+          queryKeys.guests.detail(guestId),
+          context.previousGuest
+        );
+      }
+    },
+    
+    // Invalider les requêtes pertinentes après succès
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.detail(guestId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.guests.lists() });
+    },
+  });
+}
+
+// Utilisation dans un composant
+function StatusToggle({ guestId }: { guestId: string }) {
+  const { data: guest } = useGuest(guestId);
+  const toggleStatus = useToggleGuestStatus(guestId);
+  
+  const handleStatusChange = (newStatus: 'pending' | 'checked-in' | 'checked-out') => {
+    toggleStatus.mutate(newStatus);
+  };
+  
+  if (!guest) return null;
+  
+  return (
+    <div className="flex space-x-2">
+      <button
+        className={`px-3 py-1 rounded-full ${
+          guest.status === 'pending' ? 'bg-primary text-white' : 'bg-neutral-200 text-neutral-700'
+        }`}
+        onClick={() => handleStatusChange('pending')}
+        disabled={toggleStatus.isPending}
+      >
+        En attente
+      </button>
+      <button
+        className={`px-3 py-1 rounded-full ${
+          guest.status === 'checked-in' ? 'bg-green-500 text-white' : 'bg-neutral-200 text-neutral-700'
+        }`}
+        onClick={() => handleStatusChange('checked-in')}
+        disabled={toggleStatus.isPending}
+      >
+        Enregistré
+      </button>
+      <button
+        className={`px-3 py-1 rounded-full ${
+          guest.status === 'checked-out' ? 'bg-blue-500 text-white' : 'bg-neutral-200 text-neutral-700'
+        }`}
+        onClick={() => handleStatusChange('checked-out')}
+        disabled={toggleStatus.isPending}
+      >
+        Sorti
+      </button>
+    </div>
+  );
+}   
+
+// Prefetching pour améliorer l'UX
+function GuestListItem({ guest, onSelect }: { guest: Guest; onSelect: (id: string) => void }) {
+  const queryClient = useQueryClient();
+  
+  // Précharger les détails au survol
+  const handleMouseEnter = () => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.guests.detail(guest.id),
+      queryFn: () => fetchGuest(guest.id),
+    });
+  };
+  
+  return (
+    <li
+      className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md cursor-pointer"
+      onClick={() => onSelect(guest.id)}
+      onMouseEnter={handleMouseEnter}
+    >
+      <div className="font-medium">{guest.firstName} {guest.lastName}</div>
+      <div className="text-sm text-neutral-500">{guest.email}</div>
+    </li>
+  );
+}

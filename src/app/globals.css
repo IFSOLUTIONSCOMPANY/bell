@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Couleurs principales de Bell */
+  --color-bell-primary: #8B6952;
+  --color-bell-primary-dark: #6E5241;
+  --color-bell-primary-light: #A78D7A;
+  
+  /* Couleurs d'accent */
+  --color-bell-red: #E11900;
+  --color-bell-orange: #DB7F3B;
+  --color-bell-yellow: #FFC043;
+  --color-bell-green: #8CA571;
+  --color-bell-blue: #276EF1;
+  --color-bell-purple: #7356BF;
+  
+  /* Couleurs de fond */
+  --color-bell-background: #F0EBE2;
+  --color-bell-background-light: #F8F5F1;
+  --color-bell-background-dark: #E3DBD0;
+  --color-bell-card: #FFFFFF;
+  
+  /* Couleurs neutres */
+  --color-bell-gray-50: #F8F5F1;
+  --color-bell-gray-100: #F0EBE2;
+  --color-bell-gray-200: #E3DBD0;
+  --color-bell-gray-300: #D0C5B7;
+  --color-bell-gray-400: #B9AA99;
+  --color-bell-gray-500: #9D8B7A;
+  --color-bell-gray-600: #8B6952;
+  --color-bell-gray-700: #6E5241;
+  --color-bell-gray-800: #513A2D;
+  --color-bell-gray-900: #382719;
+  
+  /* Rayons de bordure */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Ombres */
+  --shadow-sm: 0 1px 2px 0 rgb(56 39 25 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(56 39 25 / 0.07), 0 2px 4px -2px rgb(56 39 25 / 0.07);
+  --shadow-lg: 0 10px 15px -3px rgb(56 39 25 / 0.07), 0 4px 6px -4px rgb(56 39 25 / 0.07);
+  
+  /* Typographie */
+  --font-sans: "Inter", sans-serif;
+  
+  /* Transitions */
+  --transition-default: all 0.2s ease-in-out;
+  
+  /* Dégradés */
+  --gradient-bell: linear-gradient(135deg, var(--color-bell-primary) 0%, var(--color-bell-primary-dark) 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Classes utilitaires */
+.bg-bell-gradient {
+  background: var(--gradient-bell);
+}
+
+.text-bell-gradient {
+  background: var(--gradient-bell);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Style de base */
+body {
+  background-color: var(--color-bell-background);
+  color: var(--color-bell-gray-800);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-bell-gray-900);
+    color: var(--color-bell-gray-100);
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

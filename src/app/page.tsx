@@ -1,103 +1,149 @@
-import Image from "next/image";
+
+import { ChatsCard } from '@/components/chats';
+import { TodayCard } from '@/components/today';
+import { ActivityCard } from '@/components/activity';
+import { MessageList } from '@/components/message';
+import { Icon } from '@iconify/react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const messages = [
+    {
+      id: '1',
+      name: 'Mr. Maël Mountassir',
+      message: 'The AC is leaking in my room, can you send the maintenance please?',
+      timestamp: '16 / 03 / 2025 09:42',
+      service: 'Maintenance',
+      priority: 'High' as const
+    },
+    {
+      id: '2',
+      name: 'Mr. Maël Mountassir',
+      message: 'The AC is leaking in my room, can you send the maintenance please?',
+      timestamp: '16 / 03 / 2025 09:42',
+      service: 'Maintenance',
+      priority: 'High' as const
+    }
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <main className="relative min-h-screen bg-[#EFEDE4] pb-20 md:pb-0 px-4 pt-4 md:p-6">
+      {/* Background avec effet de flou */}
+      <div className="absolute inset-0 bg-[rgba(239,237,228,0.5)] backdrop-blur-[375px]"></div>
+      
+      {/* Logo Bell - fixé en haut à gauche */}
+      <div className="fixed top-4 left-4 w-[60px] h-[60px] z-50">
+        <img src="/icons/bell-icon.svg" alt="Bell Logo" className="w-full h-full" />
+      </div>
+      
+      {/* Logo Profile - fixé en bas à gauche */}
+      <div className="fixed bottom-4 left-4 w-[60px] h-[60px] z-50">
+        <img src="/icons/icon-profile.svg" alt="Profile" className="w-full h-full" />
+      </div>
+      
+      {/* Contenu principal */}
+      <div className="relative z-10 max-w-[1400px] mx-auto">        
+        {/* Status Bar */}
+        <div className="box-border w-full md:w-[530px] mx-auto h-[50px] md:h-[60px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-full flex items-center justify-between px-6 mb-6">
+          <div className="font-medium text-[16px] text-[#65413D]">
+            Desk
+          </div>
+          <div className="font-light text-[16px] text-[#65413D]">
+            Oceania Porte de Versailles
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        
+        {/* Settings Button */}
+        <div className="absolute top-4 right-4 md:top-5 md:right-5 w-[50px] h-[50px] md:w-[60px] md:h-[60px] bg-[rgba(250,249,245,0.7)] rounded-full border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md flex items-center justify-center">
+          <Icon icon="solar:settings-bold-duotone" width="24" height="24" className="text-[#65413D]" />
+        </div>
+        
+        {/* Grid layout pour desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-8">
+          {/* CHATS */}
+          <ChatsCard />
+          
+          {/* REQUESTS */}
+          <div className="w-full h-[220px] md:h-[250px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-[35px] p-6 relative">
+            <h2 className="font-['Jubilat'] font-normal text-[28px] text-[#65413D]">
+              Requests
+            </h2>
+            
+            {/* Enter Tab */}
+            <div className="absolute right-6 top-6 w-[40px] h-[40px] rounded-full bg-[rgba(221,176,104,0.1)] flex items-center justify-center">
+              <Icon icon="solar:arrow-right-bold-duotone" width="20" height="20" className="text-[#DDB068]" />
+            </div>
+            
+            {/* Circular chart */}
+            <div className="absolute right-16 top-16 w-[120px] h-[120px] rounded-full border-[15px] border-[rgba(101,65,61,0.15)] flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-[15px] border-transparent border-t-[#65413D] border-r-[#65413D]"></div>
+            </div>
+            
+            {/* Services et barres */}
+            <div className="mt-14 w-[60%]">
+              <div className="flex items-center mb-4 gap-4">
+                <div className="w-4 h-4 rounded-sm bg-[rgba(101,65,61,0.9)]"></div>
+                <span className="text-[14px] font-light text-[#65413D]">Room Service</span>
+              </div>
+              <div className="flex items-center mb-4 gap-4">
+                <div className="w-4 h-4 rounded-sm bg-[rgba(101,65,61,0.5)]"></div>
+                <span className="text-[14px] font-light text-[#65413D]">Spa & Massage</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-4 h-4 rounded-sm bg-[rgba(101,65,61,0.25)]"></div>
+                <span className="text-[14px] font-light text-[#65413D]">Housekeeping</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* TODAY */}
+          <TodayCard className="lg:row-span-2" />
+          
+          {/* ACTIVITY */}
+          <ActivityCard />
+        </div>
+        
+        {/* Filtres et recherche */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="w-full h-[50px] md:h-[60px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-full flex items-center px-5">
+            <span className="text-[16px] font-medium text-[rgba(101,65,61,0.5)]">
+              Search
+            </span>
+            <div className="ml-auto">
+              <Icon icon="solar:magnifer-bold-duotone" width="20" height="20" className="text-[#65413D]" />
+            </div>
+          </div>
+          
+          <div className="w-full h-[50px] md:h-[60px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-full flex items-center px-5">
+            <span className="text-[16px] font-medium text-[#65413D]">
+              Maintenance
+            </span>
+            <div className="ml-auto">
+              <Icon icon="solar:alt-arrow-down-bold-duotone" width="20" height="20" className="text-[#65413D]" />
+            </div>
+          </div>
+          
+          <div className="w-full h-[50px] md:h-[60px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-full flex items-center px-5">
+            <span className="text-[16px] font-medium text-[#65413D]">
+              Date
+            </span>
+            <div className="ml-auto">
+              <Icon icon="solar:alt-arrow-down-bold-duotone" width="20" height="20" className="text-[#65413D]" />
+            </div>
+          </div>
+          
+          <div className="w-full h-[50px] md:h-[60px] bg-[rgba(250,249,245,0.7)] border-[0.5px] border-[rgba(217,208,195,0.5)] shadow-sm backdrop-blur-md rounded-full flex items-center px-5">
+            <span className="text-[16px] font-medium text-[#65413D]">
+              Priority
+            </span>
+            <div className="ml-auto">
+              <Icon icon="solar:alt-arrow-down-bold-duotone" width="20" height="20" className="text-[#65413D]" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Messages */}
+        <MessageList messages={messages} />
+      </div>
+    </main>
   );
-}
+} 

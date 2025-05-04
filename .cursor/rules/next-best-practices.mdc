@@ -1,0 +1,33 @@
+---
+description: Présente les techniques optimales pour tirer parti des fonctionnalités de Next.js, incluant le App Router, les Server Components et les stratégies de chargement.
+globs: 
+alwaysApply: false
+---
+# Bonnes Pratiques Next.js
+
+## Routing
+
+- Utiliser App Router pour les nouveaux projets
+- Organiser les routes logiquement dans le répertoire app
+- Créer des groupes de routes avec la notation parenthèses pour l'organisation
+- Implémenter des layouts appropriés pour la réutilisation
+
+## Récupération de Données
+
+- Utiliser les React Server Components pour la récupération de données quand c'est possible
+- Implémenter des états de chargement appropriés
+- Gérer les erreurs élégamment avec error.tsx
+- Utiliser la revalidation et le caching correctement
+
+## Performance
+
+- Utiliser le composant Image pour optimiser les images
+- Mettre en œuvre le code splitting de manière appropriée
+- Utiliser React.memo pour les composants coûteux
+- Implémenter le streaming et le chargement progressif
+
+## TypeScript
+
+- Définir des types pour toutes les variables et fonctions
+- Utiliser React.FC avec parcimonie (préférer les interfaces de props explicites)
+- Tirer parti des types utilitaires de TypeScript
