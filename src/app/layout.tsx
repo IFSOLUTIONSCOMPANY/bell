@@ -22,10 +22,8 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-[#EFEDE4]`}>
         <Sidebar />
-        <MobileNav />
-        <div className="md:pl-0">
-          {children}
-        </div>
+        {/* <MobileNav /> */}
+        <div className="md:pl-0">{children}</div>
       </body>
     </html>
   );
