@@ -19,7 +19,6 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   avatar,
   className = ''
 }) => {
-  // Déterminer la couleur de fond de la priorité
   const priorityColor = {
     High: 'bg-[#DE4B21]',
     Medium: 'bg-[#DDB068]',
