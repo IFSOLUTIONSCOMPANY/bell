@@ -1,0 +1,105 @@
+/* Styles spécifiques pour la vue mobile */
+.mobile-container aside.fixed,
+.mobile-container ~ aside.fixed {
+  display: none !important;
+}
+
+/* Autres ajustements spécifiques au mobile */
+.mobile-container {
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #F2F1EA;
+  position: relative;
+}
+
+/* Assurer que la vue mobile n'est visible QUE sur mobile */
+@media (min-width: 768px) {
+  .desktop-only-container {
+    display: block;
+  }
+  .mobile-only-container {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-only-container {
+    display: none;
+  }
+  .mobile-only-container {
+    display: block;
+  }
+}
+
+/* Optimisations pour iPhone */
+@media (max-width: 390px) {
+  .status-info-bar {
+    max-width: 85%;
+  }
+  
+  .welcome-message {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Ajustements pour iPhones plus petits */
+@media (max-width: 350px) {
+  .status-info-bar {
+    max-width: 90%;
+  }
+  
+  .service-tags {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Styles pour les arrière-plans floutés */
+.blur-backdrop {
+  backdrop-filter: blur(180px);
+  -webkit-backdrop-filter: blur(180px);
+}
+
+.blur-backdrop-md {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Styles pour les badges et tags */
+.service-tag {
+  background-color: rgba(245, 244, 239, 0.5);
+  border: 1px solid #D9D0C3;
+  box-shadow: 0px 5px 10px 0px rgba(217, 208, 195, 0.5), inset 0px 1px 0px 0px rgba(250, 249, 245, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 10.8px;
+  padding: 2.5px 2.9px 2.2px;
+  color: #A59582;
+}
+
+/* Styles pour les ombres et effets */
+.bell-shadow {
+  box-shadow: 0px 3.6px 7.2px 0px rgba(217, 208, 195, 1), inset 0px 1.08px 0px 0px rgba(250, 249, 245, 0.8);
+}
+
+/* Masquer les barres de défilement tout en conservant la fonctionnalité */
+.hide-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE et Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari et Opera */
+}
+
+/* Assurer que la zone de contenu ne chevauche pas les éléments fixes */
+.content-area {
+  position: relative;
+  z-index: 10;
+  padding-bottom: 230px;
+  overflow-y: auto;
+} 

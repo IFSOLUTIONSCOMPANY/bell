@@ -2,12 +2,7 @@ import * as React from "react";
 
 import { IconSvgProps } from "@/types";
 
-export const StatusBarIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const StatusBarIcon: React.FC<IconSvgProps> = () => (
   <svg
     width="300"
     height="300"
@@ -31,12 +26,7 @@ export const StatusBarIcon: React.FC<IconSvgProps> = ({
   </svg>
 );
 
-export const BellLogoIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const BellLogoIcon: React.FC<IconSvgProps> = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="55"
@@ -287,12 +277,7 @@ export const BellLogoIcon: React.FC<IconSvgProps> = ({
   </svg>
 );
 
-export const ProfileIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const ProfileIcon: React.FC<IconSvgProps> = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="25"
@@ -317,12 +302,7 @@ export const ProfileIcon: React.FC<IconSvgProps> = ({
   </svg>
 );
 
-export const BellHeaderIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const BellHeaderIcon: React.FC<IconSvgProps> = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="50"
@@ -353,12 +333,7 @@ export const BellHeaderIcon: React.FC<IconSvgProps> = ({
   </svg>
 );
 
-export const MoreButtonIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const MoreButtonIcon: React.FC<IconSvgProps> = () => (
   <svg
     width="41"
     height="40"
@@ -395,12 +370,7 @@ export const MoreButtonIcon: React.FC<IconSvgProps> = ({
   </svg>
 );
 
-export const SpeakButtonIcon: React.FC<IconSvgProps> = ({
-  size = 24,
-  width,
-  height,
-  ...props
-}) => (
+export const SpeakButtonIcon: React.FC<IconSvgProps> = () => (
   <svg
     width="40"
     height="40"
