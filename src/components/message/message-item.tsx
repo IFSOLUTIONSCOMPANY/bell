@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 interface MessageItemProps {
   name: string;
   message: string;
@@ -35,7 +36,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
           
           {/* Avatar */}
           <div className="w-[50px] h-[50px] rounded-full bg-[rgba(101,65,61,0.5)] ml-4 mr-4 flex-shrink-0">
-            {avatar && <img src={avatar} alt={name} className="w-full h-full rounded-full object-cover" />}
+            {avatar && <Image src={avatar} alt={name} className="w-full h-full rounded-full object-cover" width={100} height={100} />}
           </div>
         </div>
         

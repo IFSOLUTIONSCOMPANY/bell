@@ -11,20 +11,22 @@ interface ServiceTag {
 interface ServiceTagsProps {
   className?: string;
   tags?: ServiceTag[];
+  onServiceSelect?: (service: string) => void;
 }
 
 export const ServiceTags: React.FC<ServiceTagsProps> = ({
   className = '',
   tags = [
-    { id: '1', icon: '📑', label: 'Guide' },
-    { id: '2', icon: '🏨', label: 'Amenities' },
-    { id: '3', icon: '👨‍🍳', label: 'Room Service' },
-    { id: '4', icon: '🧹', label: 'Housekeeping' },
-    { id: '5', icon: '🔎', label: 'Lost & Found' },
-    { id: '6', icon: '🔑', label: 'Conciergerie' },
-    { id: '7', icon: '🧘', label: 'Spa & Massage' },
-    { id: '8', icon: '🍴', label: 'Book a table' },
-  ]
+    { id: 'guide', icon: '📑', label: 'Guide' },
+    { id: 'amenities', icon: '🏨', label: 'Amenities' },
+    { id: 'room-service', icon: '👨‍🍳', label: 'Room Service' },
+    { id: 'housekeeping', icon: '🧹', label: 'Housekeeping' },
+    { id: 'lost-found', icon: '🔎', label: 'Lost & Found' },
+    { id: 'conciergerie', icon: '🔑', label: 'Conciergerie' },
+    { id: 'spa-massage', icon: '🧘', label: 'Spa & Massage' },
+    { id: 'book-table', icon: '🍴', label: 'Book a table' },
+  ],
+  onServiceSelect
 }) => {
   // État pour suivre l'interaction utilisateur
   const [isPaused, setIsPaused] = useState(false);
@@ -86,7 +88,6 @@ export const ServiceTags: React.FC<ServiceTagsProps> = ({
     // Start animation
     animationFrameId = requestAnimationFrame(animate);
     
-    // Clean up
     return () => {
       animationRunning = false;
       cancelAnimationFrame(animationFrameId);
@@ -99,10 +100,15 @@ export const ServiceTags: React.FC<ServiceTagsProps> = ({
   };
   
   const handleInteractionEnd = () => {
-    // Resume animation after a delay
     setTimeout(() => {
       setIsPaused(false);
     }, 2000);
+  };
+  
+  const handleTagClick = (tagId: string) => {
+    if (onServiceSelect) {
+      onServiceSelect(tagId);
+    }
   };
   
   // Rendre les tags en triple pour une boucle continue
@@ -127,6 +133,7 @@ export const ServiceTags: React.FC<ServiceTagsProps> = ({
             <div
               key={`${tag.id}-${index}`}
               className="service-tag inline-flex items-center justify-center h-[36px] px-4 whitespace-nowrap cursor-pointer hover:bg-[rgba(250,249,245,0.9)] transition-colors bg-[rgba(234,230,220,0.7)] shadow-sm rounded-full"
+              onClick={() => handleTagClick(tag.id)}
             >
               <span className="text-[15px] text-[#65413D]">{tag.icon} {tag.label}</span>
             </div>
@@ -150,6 +157,7 @@ export const ServiceTags: React.FC<ServiceTagsProps> = ({
             <div
               key={`${tag.id}-${index}`}
               className="service-tag inline-flex items-center justify-center h-[36px] px-4 whitespace-nowrap cursor-pointer hover:bg-[rgba(250,249,245,0.9)] transition-colors bg-[rgba(234,230,220,0.7)] shadow-sm rounded-full"
+              onClick={() => handleTagClick(tag.id)}
             >
               <span className="text-[15px] text-[#65413D]">{tag.icon} {tag.label}</span>
             </div>

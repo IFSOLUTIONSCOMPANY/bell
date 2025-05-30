@@ -4,7 +4,7 @@ import { TodayCard } from '@/components/today';
 import { ActivityCard } from '@/components/activity';
 import { MessageList } from '@/components/message';
 import { Icon } from '@iconify/react';
-
+import Image from 'next/image';
 export default function Home() {
   const messages = [
     {
@@ -32,12 +32,12 @@ export default function Home() {
       
       {/* Logo Bell - fixé en haut à gauche */}
       <div className="fixed top-4 left-4 w-[60px] h-[60px] z-50">
-        <img src="/icons/bell-icon.svg" alt="Bell Logo" className="w-full h-full" />
+        <Image src="/icons/bell-icon.svg" alt="Bell Logo" className="w-full h-full" width={100} height={100} />
       </div>
       
       {/* Logo Profile - fixé en bas à gauche */}
       <div className="fixed bottom-4 left-4 w-[60px] h-[60px] z-50">
-        <img src="/icons/icon-profile.svg" alt="Profile" className="w-full h-full" />
+        <Image src="/icons/icon-profile.svg" alt="Profile" className="w-full h-full" width={100} height={100} />
       </div>
       
       {/* Contenu principal */}
