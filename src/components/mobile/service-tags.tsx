@@ -25,6 +25,7 @@ export const ServiceTags: React.FC<ServiceTagsProps> = ({
     { id: 'conciergerie', icon: '🔑', label: 'Conciergerie' },
     { id: 'spa-massage', icon: '🧘', label: 'Spa & Massage' },
     { id: 'book-table', icon: '🍴', label: 'Book a table' },
+    { id: 'laundry', icon: '👕', label: 'Laundry' },
   ],
   onServiceSelect
 }) => {

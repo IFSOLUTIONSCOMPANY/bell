@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 import {
   Header,
   WelcomeView,
-  ConversationView,
   ChatInput,
   ServiceTags,
   StatusInfoBar
@@ -13,6 +13,8 @@ import { ServiceCard } from '@/components/ui/service-card';
 import { ItemPopup } from '@/components/ui/item-popup';
 import { OrderConfirmationPopup } from '@/components/ui/order-confirmation-popup';
 import { OrderPaymentPopup } from '@/components/ui/order-payment-popup';
+import { ContextualConversationView } from "@/components/mobile/contextual-conversation-view";
+import { QuickAction } from '@/types/scenarios';
 
 // Type pour les items du menu
 interface MenuItem {
@@ -113,6 +115,9 @@ export default function MobilePage() {
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [showOrderPayment, setShowOrderPayment] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [currentServiceType, setCurrentServiceType] = useState<'spa' | 'room-service' | 'housekeeping' | 'concierge' | 'general'>('general');
+
+  const router = useRouter();
 
   // Calculer les totaux
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -120,13 +125,29 @@ export default function MobilePage() {
   const serviceFee = subtotal * 0.01; // 1% de frais de service
   const total = subtotal + deliveryFee + serviceFee;
 
-  // Gérer la sélection du service
+  // Gérer la sélection du service avec conversation contextuelle
   const handleServiceSelect = (service: string) => {
     if (service === 'room-service') {
+      setCurrentServiceType('room-service');
       setShowMenu(true);
+    } else if (service === 'spa-massage') {
+      // Rediriger vers la page spa pour le flow complet
+      router.push('/spa');
+    } else if (service === 'book-table') {
+      // Rediriger vers la page de réservation de table
+      router.push('/book-table');
+    } else if (service === 'laundry') {
+      // Rediriger vers la page de blanchisserie
+      router.push('/laundry');
+    } else if (service === 'housekeeping') {
+      setCurrentServiceType('housekeeping');
+      setShowConversation(true);
+    } else if (service === 'conciergerie') {
+      setCurrentServiceType('concierge');
+      setShowConversation(true);
     } else {
-      // Pour les autres services, on pourrait afficher d'autres vues
-      alert(`Service "${service}" sélectionné - À implémenter`);
+      setCurrentServiceType('general');
+      setShowConversation(true);
     }
   };
 
@@ -159,14 +180,6 @@ export default function MobilePage() {
         return [...prevCart, { id: itemId, name: itemTitle, quantity, price: itemPrice }];
       }
     });
-  };
-
-  // Gérer la sélection d'un article avec options
-  const handleItemClick = (item: MenuItem) => {
-    if (item.sections) {
-      setSelectedItem(item);
-      setShowItemPopup(true);
-    }
   };
 
   // Gérer l'ajout d'un article avec options
@@ -202,26 +215,43 @@ export default function MobilePage() {
     setShowMenu(false);
   };
 
+  // Gérer les actions rapides depuis la conversation
+  const handleQuickAction = (action: QuickAction) => {
+    switch (action.action) {
+      case 'open-menu':
+        if (action.payload?.type === 'room-service-menu') {
+          setShowConversation(false);
+          setShowMenu(true);
+        } else if (action.payload?.type === 'spa-services') {
+          // Rediriger vers la page spa ou ouvrir le menu spa
+          router.push('/spa');
+        }
+        break;
+      case 'book-service':
+        // Logique de réservation selon le service
+        console.log('Réservation service:', action.payload);
+        break;
+      case 'call-staff':
+        // Logique d'appel du personnel
+        alert('Un membre de notre équipe va vous contacter sous peu.');
+        break;
+      default:
+        console.log('Action non gérée:', action);
+    }
+  };
+
   return (
-    <main className="mobile-only-container relative min-h-screen overflow-hidden bg-[#F2F1EA]">
-      {/* Background avec effet de gradient et flou léger */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('/images/mesh-gradient.png')] bg-cover bg-center opacity-20"></div>
-        <div className="absolute inset-0 bg-[rgba(239,237,228,0.9)] backdrop-blur-[270px]"></div>
-      </div>
+    <main className="w-full max-w-[390px] mx-auto bg-[#F2F1EA] min-h-screen relative overflow-hidden">
+      {/* Background avec effet blur */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/images/bg-iphone.png')`,
+          filter: 'blur(180px)',
+          transform: 'scale(1.1)',
+        }}
+      />
 
-      {/* Avertissement sur desktop */}
-      <div className="desktop-only-container fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F2F1EA] text-[#65413D] p-6">
-        <div className="max-w-md text-center">
-          <h2 className="text-2xl font-[&apos;Jubilat&apos;] mb-4">Vue Mobile Uniquement</h2>
-          <p className="mb-6">Cette page est conçue pour être affichée uniquement sur les appareils mobiles. Veuillez réduire la taille de votre navigateur ou accéder à cette page depuis un appareil mobile.</p>
-          <div className="border-2 border-[#65413D] rounded-md p-4">
-            <p className="text-sm">Largeur d&apos;écran recommandée : moins de 768px</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenu principal avec z-index approprié */}
       <div className="relative z-10 flex flex-col h-screen">
         {/* Header toujours visible */}
         <Header className="pt-2" />
@@ -264,16 +294,19 @@ export default function MobilePage() {
               {/* Articles du menu */}
               <div className="space-y-4">
                 {menuItems.map((item) => (
-                  <div key={item.id} onClick={() => handleItemClick(item)}>
+                  <div key={item.id} onClick={() => {
+                    if (item.sections) {
+                      setSelectedItem(item);
+                      setShowItemPopup(true);
+                    }
+                  }}>
                     <ServiceCard
                       title={item.title}
-                      description={item.description}
                       price={item.price}
+                      description={item.description}
                       image={item.image}
                       variant={item.variant}
-                      onQuantityChange={(quantity) => 
-                        !item.sections && handleQuantityChange(item.id, item.title, item.priceValue, quantity)
-                      }
+                      onQuantityChange={(quantity) => handleQuantityChange(item.id, item.title, item.priceValue, quantity)}
                     />
                   </div>
                 ))}
@@ -294,7 +327,7 @@ export default function MobilePage() {
             </div>
           )}
 
-          {/* Vue conversation */}
+          {/* Conversation contextuelle */}
           {showConversation && (
             <div className="relative">
               {/* Bouton pour fermer la conversation */}
@@ -309,7 +342,10 @@ export default function MobilePage() {
                   Retour aux services
                 </button>
               </div>
-              <ConversationView />
+              <ContextualConversationView 
+                serviceType={currentServiceType}
+                onQuickAction={handleQuickAction}
+              />
             </div>
           )}
         </div>
@@ -346,10 +382,6 @@ export default function MobilePage() {
         deliveryFee={deliveryFee}
         serviceFee={serviceFee}
         total={total}
-        suggestedItems={[
-          { id: "suggest1", title: "Dessert du jour", price: "8,90 €", image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?fit=crop" },
-          { id: "suggest2", title: "Café gourmand", price: "12,50 €", image: "https://images.unsplash.com/photo-1514066558159-fc8c737ef259?fit=crop" }
-        ]}
         onConfirm={handleConfirmOrder}
       />
 
@@ -365,10 +397,10 @@ export default function MobilePage() {
         serviceFee={serviceFee}
         total={total}
         deliveryInfo={{
-          room: "Room #1023",
+          room: "Room 1023",
           hotel: "Hôtel Oceania Paris",
-          guestName: "Mr. Maël Mountassir",
-          phone: "+33 7 60 09 56 17"
+          guestName: "Mr. Guest",
+          phone: "+33 1 40 60 30 30"
         }}
         onPay={handlePayment}
       />

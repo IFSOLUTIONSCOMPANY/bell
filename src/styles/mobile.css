@@ -13,47 +13,13 @@
   position: relative;
 }
 
-/* Assurer que la vue mobile n'est visible QUE sur mobile */
-@media (min-width: 768px) {
-  .desktop-only-container {
-    display: block;
-  }
-  .mobile-only-container {
-    display: none;
-  }
+/* FORCER l'affichage mobile sur tous les appareils (PWA iOS fix) */
+.desktop-only-container {
+  display: none !important;
 }
 
-@media (max-width: 767px) {
-  .desktop-only-container {
-    display: none;
-  }
-  .mobile-only-container {
-    display: block;
-  }
-}
-
-/* Optimisations pour iPhone */
-@media (max-width: 390px) {
-  .status-info-bar {
-    max-width: 85%;
-  }
-  
-  .welcome-message {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-/* Ajustements pour iPhones plus petits */
-@media (max-width: 350px) {
-  .status-info-bar {
-    max-width: 90%;
-  }
-  
-  .service-tags {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
+.mobile-only-container {
+  display: block !important;
 }
 
 /* Styles pour les arrière-plans floutés */
@@ -86,20 +52,82 @@
 
 /* Masquer les barres de défilement tout en conservant la fonctionnalité */
 .hide-scrollbar,
-.scrollbar-hide {
+.service-tags-container {
   -ms-overflow-style: none;  /* IE et Edge */
-  scrollbar-width: none;  /* Firefox */
+  scrollbar-width: none;     /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar,
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari et Opera */
+.service-tags-container::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, et Opera */
 }
 
-/* Assurer que la zone de contenu ne chevauche pas les éléments fixes */
-.content-area {
-  position: relative;
-  z-index: 10;
-  padding-bottom: 230px;
-  overflow-y: auto;
+/* Optimisations pour iPhone et petits écrans */
+@media (max-width: 390px) {
+  .status-info-bar {
+    max-width: 85%;
+  }
+  
+  .welcome-message {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Ajustements pour iPhones plus petits */
+@media (max-width: 350px) {
+  .status-info-bar {
+    max-width: 90%;
+  }
+  
+  .service-tags {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Styles pour les PWA iOS - Fixes pour les écrans blancs */
+@media (display-mode: standalone) {
+  .mobile-container {
+    /* Ajustements spécifiques pour le mode PWA */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    
+    /* Fix pour iOS PWA */
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+  
+  /* Force le rendu sur iOS PWA */
+  body {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Styles pour les animations et interactions */
+.service-tag:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+/* Animation pour le scroll infini */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 } 

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ServiceCard } from '@/components/ui/service-card';
-import { AddButton } from '@/components/ui/add-button';
 import { ItemPopup } from '@/components/ui/item-popup';
 import { OrderConfirmationPopup } from '@/components/ui/order-confirmation-popup';
 import { OrderPaymentPopup } from '@/components/ui/order-payment-popup';
-import { 
+import {
   Header,
-  StatusInfoBar,
   ServiceTags,
   WelcomeView,
-  ChatInput
+  ChatInput,
+  StatusInfoBar,
+  SpaServicesView
 } from '@/components/mobile';
 
 export default function ComponentsPage() {
@@ -22,6 +22,7 @@ export default function ComponentsPage() {
   const [showItemPopup, setShowItemPopup] = useState(false);
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [showOrderPayment, setShowOrderPayment] = useState(false);
+  const [mobileView, setMobileView] = useState('main'); // 'main' ou 'spa'
 
   return (
     <div className="min-h-screen bg-bell-background">
@@ -166,21 +167,10 @@ export default function ComponentsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-bell-primary mb-6">Boutons d&apos;ajout</h2>
               <Card className="p-6">
-                <h3 className="text-lg font-medium mb-4">États du bouton</h3>
-                <div className="flex gap-8 items-center">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">État initial</p>
-                    <AddButton />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">Avec quantité</p>
-                    <AddButton initialQuantity={2} />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">Petite taille</p>
-                    <AddButton variant="small" />
-                  </div>
-                </div>
+                <h3 className="text-lg font-medium mb-4">Composant à implémenter</h3>
+                <p className="text-bell-gray-600 text-sm">
+                  Le composant AddButton sera implémenté prochainement pour gérer les quantités dans les cartes de service.
+                </p>
               </Card>
             </section>
           </div>
@@ -189,36 +179,71 @@ export default function ComponentsPage() {
         {/* Section Mobile */}
         {activeSection === 'mobile' && (
           <div className="space-y-8">
+            {/* Navigation mobile */}
+            <div className="flex gap-4 justify-center">
+              <Button
+                variant={mobileView === 'main' ? 'primary' : 'outline'}
+                onClick={() => setMobileView('main')}
+                size="sm"
+              >
+                Vue Principale
+              </Button>
+              <Button
+                variant={mobileView === 'spa' ? 'primary' : 'outline'}
+                onClick={() => setMobileView('spa')}
+                size="sm"
+              >
+                Services Spa
+              </Button>
+            </div>
+
             <div className="max-w-[390px] mx-auto">
-              {/* Aperçu Mobile */}
-              <Card className="overflow-hidden">
-                <div className="bg-[#F2F1EA] min-h-[844px] relative">
-                  {/* Header */}
-                  <div className="sticky top-0 z-20">
-                    <Header />
-                  </div>
+              {/* Aperçu Mobile - Vue Principale */}
+              {mobileView === 'main' && (
+                <Card className="overflow-hidden">
+                  <div className="bg-[#F2F1EA] min-h-[844px] relative">
+                    {/* Header */}
+                    <div className="sticky top-0 z-20">
+                      <Header />
+                    </div>
 
-                  {/* Status Info Bar */}
-                  <div className="px-4 py-2">
-                    <StatusInfoBar />
-                  </div>
+                    {/* Status Info Bar */}
+                    <div className="px-4 py-2">
+                      <StatusInfoBar />
+                    </div>
 
-                  {/* Service Tags (juste sous StatusInfoBar) */}
-                  <div className="px-4 py-4">
-                    <ServiceTags />
-                  </div>
+                    {/* Service Tags (juste sous StatusInfoBar) */}
+                    <div className="px-4 py-4">
+                      <ServiceTags />
+                    </div>
 
-                  {/* Welcome View */}
-                  <div className="px-4 py-4">
-                    <WelcomeView />
-                  </div>
+                    {/* Welcome View */}
+                    <div className="px-4 py-4">
+                      <WelcomeView />
+                    </div>
 
-                  {/* Chat Input */}
-                  <div className="absolute bottom-0 left-0 right-0">
-                    <ChatInput />
+                    {/* Chat Input */}
+                    <div className="absolute bottom-0 left-0 right-0">
+                      <ChatInput />
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              )}
+
+              {/* Aperçu Mobile - Services Spa */}
+              {mobileView === 'spa' && (
+                <Card className="overflow-hidden">
+                  <div className="bg-[#F2F1EA] min-h-[844px] relative">
+                    {/* Header */}
+                    <div className="sticky top-0 z-20">
+                      <Header />
+                    </div>
+
+                    {/* Vue Services Spa */}
+                    <SpaServicesView />
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         )}
@@ -265,6 +290,61 @@ export default function ComponentsPage() {
             </section>
           </div>
         )}
+
+        {/* Section Composants Spa */}
+        <section id="composants-spa" className="mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-6 h-6 bg-green-500 rounded-md flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1L5 5H1L4 8L3 12L7 10L11 12L10 8L13 5H9L7 1Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-bell-primary">Composants Spa</h2>
+          </div>
+          
+          <div className="space-y-8">
+            {/* Cartes de Services Spa */}
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/30">
+              <h3 className="text-lg font-semibold text-bell-primary mb-4">Cartes de Services Spa</h3>
+              <div className="max-w-sm mx-auto space-y-4">
+                <ServiceCard
+                  title="Massage à deux"
+                  description="Massage relaxant de 60, 90 ou 120 minutes à deux."
+                  price="à partir de 300 €"
+                  image="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?fit=crop&w=400&h=300"
+                  variant="promo"
+                  onQuantityChange={() => console.log('Service spa ajouté')}
+                />
+                
+                <ServiceCard
+                  title="Soin du visage"
+                  description=""
+                  price="210 €"
+                  image="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?fit=crop&w=400&h=300"
+                  variant="popular"
+                  onQuantityChange={() => console.log('Service spa ajouté')}
+                />
+                
+                <ServiceCard
+                  title="Modelage 60'"
+                  description="Massage complet du corps pendant soixante minutes."
+                  price="150 €"
+                  image="https://images.unsplash.com/photo-1540555700478-4be289fbecef?fit=crop&w=400&h=300"
+                  variant="standard"
+                  onQuantityChange={() => console.log('Service spa ajouté')}
+                />
+              </div>
+              <p className="text-sm text-bell-gray-700 mt-4 text-center">
+                Ces composants sont utilisés pour afficher les services de spa et bien-être dans l&apos;application mobile.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section Palette de Couleurs */}
+        <section id="palette-couleurs" className="mb-12">
+          {/* Palette de couleurs */}
+        </section>
       </div>
 
       {/* Popups */}
