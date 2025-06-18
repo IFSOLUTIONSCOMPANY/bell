@@ -26,16 +26,16 @@ export default function LaundryPage() {
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
   const [selectedItems, setSelectedItems] = useState<LaundryItem[]>([]);
-  const [ironingService, setIroningService] = useState(false);
-
+  const [ironingItems, setIroningItems] = useState<string[]>([]);
+  
   const handleServiceSelection = (items: LaundryItem[]) => {
     setSelectedItems(items);
     setShowServicePopup(false);
     setShowConfirmationPopup(true);
   };
-
-  const handleConfirmOrder = (withIroning: boolean) => {
-    setIroningService(withIroning);
+  
+  const handleConfirmOrder = (withIroningItems: string[]) => {
+    setIroningItems(withIroningItems);
     setShowConfirmationPopup(false);
     setShowPaymentPopup(true);
   };
@@ -51,7 +51,7 @@ export default function LaundryPage() {
 
   // Calculs des prix
   const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const ironingFee = ironingService ? 10.00 : 0;
+  const ironingFee = ironingItems.length > 0 ? 10.00 : 0;
   const serviceFee = 1.00; // Frais de service fixes
   const total = subtotal + ironingFee + serviceFee;
 
