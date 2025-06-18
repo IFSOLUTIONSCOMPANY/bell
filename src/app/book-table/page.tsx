@@ -35,7 +35,7 @@ export default function BookTablePage() {
     { id: '10:30', time: '10:30', available: true },
     { id: '11:30', time: '11:30', available: true },
     { id: '12:00', time: '12:00', available: true },
-    { id: '12:30', time: '12:30', available: false }, // Sélectionné dans le design
+    { id: '12:30', time: '12:30', available: true }, // Sélectionné dans le design
     { id: '13:00', time: '13:00', available: true },
   ];
 

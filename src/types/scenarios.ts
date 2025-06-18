@@ -303,4 +303,15 @@ export function getScenarioByService(serviceType: string): ChatScenario | null {
   return allScenarios.find(scenario => 
     scenario.serviceType === serviceType && scenario.id.includes('welcome')
   ) || null;
+}
+
+// Récupérer un scénario par son identifiant unique
+export function getScenarioById(id: string): ChatScenario | null {
+  const allScenarios = [
+    ...SPA_SCENARIOS,
+    ...ROOM_SERVICE_SCENARIOS,
+    ...HOUSEKEEPING_SCENARIOS,
+    ...CONCIERGE_SCENARIOS,
+  ];
+  return allScenarios.find((scenario) => scenario.id === id) || null;
 } 

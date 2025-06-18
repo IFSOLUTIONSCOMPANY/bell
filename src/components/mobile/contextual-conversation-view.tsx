@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { BotResponse, QuickAction, getScenarioByService } from '@/types/scenarios';
+import { useEffect, useState, useRef } from "react";
+import {
+  BotResponse,
+  QuickAction,
+  getScenarioByService,
+  getScenarioById,
+} from "@/types/scenarios";
 
 interface Message {
   id: string;
@@ -13,31 +18,35 @@ interface Message {
 
 interface ContextualConversationViewProps {
   className?: string;
-  serviceType?: 'spa' | 'room-service' | 'housekeeping' | 'concierge' | 'general';
+  serviceType?:
+    | "spa"
+    | "room-service"
+    | "housekeeping"
+    | "concierge"
+    | "general";
   onQuickAction?: (action: QuickAction) => void;
 }
 
-export const ContextualConversationView: React.FC<ContextualConversationViewProps> = ({
-  className = '',
-  serviceType = 'general',
-  onQuickAction
-}) => {
+export const ContextualConversationView: React.FC<
+  ContextualConversationViewProps
+> = ({ className = "", serviceType = "general", onQuickAction }) => {
   // Référence pour le conteneur de messages
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // État pour simuler une conversation contextuelle
   const [messages, setMessages] = useState<Message[]>([]);
-  
+
   // État pour la réponse en cours de génération
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedText, setGeneratedText] = useState('');
+  const [generatedText, setGeneratedText] = useState("");
   const [visibleDots, setVisibleDots] = useState(0);
-  const [currentBotResponse, setCurrentBotResponse] = useState<BotResponse | null>(null);
+  const [currentBotResponse, setCurrentBotResponse] =
+    useState<BotResponse | null>(null);
 
   // Initialiser le scénario selon le service
   useEffect(() => {
     const scenario = getScenarioByService(serviceType);
-    
+
     if (scenario && scenario.botResponses.length > 0) {
       // Message d'accueil contextuel
       const welcomeResponse = scenario.botResponses[0];
@@ -49,11 +58,11 @@ export const ContextualConversationView: React.FC<ContextualConversationViewProp
   // Animation séquentielle des points
   useEffect(() => {
     if (!isGenerating) return;
-    
+
     const animateDots = () => {
-      setVisibleDots(prev => (prev + 1) % 4);
+      setVisibleDots((prev) => (prev + 1) % 4);
     };
-    
+
     const interval = setInterval(animateDots, 500);
     return () => clearInterval(interval);
   }, [isGenerating]);
@@ -61,49 +70,50 @@ export const ContextualConversationView: React.FC<ContextualConversationViewProp
   // Effet pour simuler la génération progressive du texte
   useEffect(() => {
     if (!isGenerating || !currentBotResponse) return;
-    
+
     const fullResponse = currentBotResponse.content;
-    
+
     const initialDelay = setTimeout(() => {
       let currentIndex = 0;
-      
+
       const addNextChar = () => {
         if (currentIndex < fullResponse.length) {
           setGeneratedText(fullResponse.substring(0, currentIndex + 1));
           currentIndex++;
-          
+
           const typingSpeed = Math.random() * 30 + 20;
           setTimeout(addNextChar, typingSpeed);
         } else {
           // Ajouter la réponse complète aux messages
           setIsGenerating(false);
-          
-          setMessages(prev => [
+
+          setMessages((prev) => [
             ...prev,
             {
               id: (prev.length + 1).toString(),
               content: fullResponse,
               isUser: false,
               timestamp: new Date(),
-              quickActions: currentBotResponse.quickActions
-            }
+              quickActions: currentBotResponse.quickActions,
+            },
           ]);
-          
-          setGeneratedText('');
+
+          setGeneratedText("");
           setCurrentBotResponse(null);
         }
       };
-      
+
       addNextChar();
     }, 1200);
-    
+
     return () => clearTimeout(initialDelay);
   }, [isGenerating, currentBotResponse]);
 
   // Faire défiler automatiquement vers le bas
   useEffect(() => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
   }, [messages, generatedText, isGenerating]);
 
@@ -112,17 +122,17 @@ export const ContextualConversationView: React.FC<ContextualConversationViewProp
     if (onQuickAction) {
       onQuickAction(action);
     }
-    
+
     // Ajouter un message utilisateur simulé
     const userMessage: Message = {
       id: (messages.length + 1).toString(),
       content: `J'ai sélectionné : ${action.label}`,
       isUser: true,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    
-    setMessages(prev => [...prev, userMessage]);
-    
+
+    setMessages((prev) => [...prev, userMessage]);
+
     // Déclencher une réponse contextuelle selon l'action
     setTimeout(() => {
       handleContextualResponse(action);
@@ -131,90 +141,42 @@ export const ContextualConversationView: React.FC<ContextualConversationViewProp
 
   // Générer une réponse contextuelle selon l'action
   const handleContextualResponse = (action: QuickAction) => {
-    let response: BotResponse;
-    
-    switch (action.action) {
-      case 'open-menu':
-        if (serviceType === 'spa') {
-          response = {
-            id: 'spa-menu-response',
-            content: `Parfait ! Voici nos services spa disponibles aujourd'hui :
+    let response: BotResponse | undefined;
 
-🧘 **Massages**
-• Modelage 60' - 150€
-• Modelage 90' - 210€  
-• Massage à deux - 300€
+    // On tente d'abord de trouver un scénario correspondant à l'action
+    let nextScenarioId: string | null = null;
 
-💅 **Soins beauté**
-• Soin du visage - 210€
-• Beauté des mains - 120€
-• Maquillage - 180€
-
-Tous nos soins incluent l'accès au spa et aux équipements de détente. Quel service vous intéresse ?`,
-            quickActions: [
-              { id: 'book-massage', label: 'Réserver un massage', action: 'book-service', payload: { type: 'massage' } },
-              { id: 'book-facial', label: 'Réserver un soin visage', action: 'book-service', payload: { type: 'facial' } }
-            ]
-          };
-        } else {
-          response = {
-            id: 'menu-response',
-            content: `Voici notre carte Room Service disponible 24h/24 :
-
-🍳 **Formule Brunch** - 36,50€
-Pain perdu, œufs brouillés, saumon fumé, fruits frais
-
-🥗 **Salade César** - 18,90€
-Romaine, parmesan, croûtons, sauce maison
-
-🍝 **Ravioles du Dauphiné** - 18,90€
-Sauce truffe et parmesan
-
-+ Frais de livraison : 10€
-Livraison en 25-30 minutes`,
-            quickActions: [
-              { id: 'order-brunch', label: 'Commander le Brunch', action: 'book-service', payload: { itemId: 'brunch' } },
-              { id: 'order-caesar', label: 'Commander la Salade', action: 'book-service', payload: { itemId: 'caesar' } }
-            ]
-          };
-        }
-        break;
-        
-      case 'book-service':
-        response = {
-          id: 'booking-response',
-          content: `Excellent choix ! 
-
-Pour finaliser votre ${serviceType === 'spa' ? 'réservation' : 'commande'}, j'ai besoin de quelques informations :
-
-• ${serviceType === 'spa' ? 'Horaire souhaité' : 'Heure de livraison souhaitée'}
-• ${serviceType === 'spa' ? 'Nombre de personnes' : 'Adresse de livraison (numéro de chambre)'}
-• Commentaires particuliers
-
-${serviceType === 'spa' 
-  ? 'Nos créneaux disponibles aujourd\'hui : 14h00, 15h30, 17h00, 18h30' 
-  : 'Livraison possible dans 25-30 minutes'
-}`,
-          quickActions: [
-            { id: 'confirm-booking', label: 'Confirmer', action: 'call-staff', payload: { type: 'confirmation' } }
-          ]
-        };
-        break;
-        
-      default:
-        response = {
-          id: 'default-response',
-          content: `Je vous remercie pour votre sélection. Un membre de notre équipe va vous contacter sous peu pour finaliser votre demande.
-
-Y a-t-il autre chose que je puisse faire pour vous ?`,
-          quickActions: [
-            { id: 'new-request', label: 'Nouvelle demande', action: 'view-info', payload: { type: 'services' } }
-          ]
-        };
+    if (serviceType === 'spa' && ['open-menu', 'book-service'].includes(action.action)) {
+      nextScenarioId = 'spa-booking-request';
     }
-    
-    setCurrentBotResponse(response);
-    setIsGenerating(true);
+    if (serviceType === 'room-service' && action.action === 'open-menu') {
+      nextScenarioId = 'room-service-order';
+    }
+
+    if (nextScenarioId) {
+      const nextScenario = getScenarioById(nextScenarioId);
+      if (nextScenario) {
+        response = nextScenario.botResponses[0];
+      }
+    }
+
+    // Fallback générique si aucun scénario trouvé
+    if (!response) {
+      response = {
+        id: 'default-response',
+        content: `Je vous remercie pour votre message. Un membre de notre équipe va vous contacter sous peu pour finaliser votre demande.
+
+Puis-je vous aider sur un autre sujet ?`,
+        quickActions: [
+          { id: 'new-request', label: 'Nouvelle demande', action: 'view-info', payload: { type: 'services' } }
+        ]
+      };
+    }
+
+    if (response) {
+      setCurrentBotResponse(response);
+      setIsGenerating(true);
+    }
   };
 
   // Fonction pour formater le texte avec des sauts de ligne
@@ -222,16 +184,16 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
     if (isUser) {
       return text;
     }
-    
-    const paragraphs = text.split('\n\n');
+
+    const paragraphs = text.split("\n\n");
     return (
       <>
         {paragraphs.map((paragraph, i) => (
-          <p key={i} className={i > 0 ? 'mt-4' : ''}>
-            {paragraph.split('\n').map((line, j) => (
+          <p key={i} className={i > 0 ? "mt-4" : ""}>
+            {paragraph.split("\n").map((line, j) => (
               <span key={j}>
                 {line}
-                {j < paragraph.split('\n').length - 1 && <br />}
+                {j < paragraph.split("\n").length - 1 && <br />}
               </span>
             ))}
           </p>
@@ -243,11 +205,16 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
   // Titre contextuel selon le service
   const getServiceTitle = () => {
     switch (serviceType) {
-      case 'spa': return 'Spa & Massage';
-      case 'room-service': return 'Room Service';
-      case 'housekeeping': return 'Housekeeping';
-      case 'concierge': return 'Conciergerie';
-      default: return 'Bell Assistant';
+      case "spa":
+        return "Spa & Massage";
+      case "room-service":
+        return "Room Service";
+      case "housekeeping":
+        return "Housekeeping";
+      case "concierge":
+        return "Conciergerie";
+      default:
+        return "Bell Assistant";
     }
   };
 
@@ -261,13 +228,18 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
       </div>
 
       {/* Zone de messages scrollable */}
-      <div 
+      <div
         ref={messagesContainerRef}
         className={`flex-1 overflow-y-auto px-6 py-4 ${className}`}
       >
         {/* Messages existants */}
         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.isUser ? 'justify-end mb-4 mt-4' : 'justify-start mb-2'}`}>
+          <div
+            key={message.id}
+            className={`flex ${
+              message.isUser ? "justify-end mb-4 mt-4" : "justify-start mb-2"
+            }`}
+          >
             {message.isUser ? (
               <div className="max-w-[80%] bg-[rgba(242,241,234,0.8)] border-t-white border-1 rounded-[18px] bell-shadow p-[7px_14px]">
                 <p className="font-['Acumin'] text-[17.3px] leading-[1.27] text-[#65413D]">
@@ -281,7 +253,7 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
                     {formatText(message.content, false)}
                   </div>
                 </div>
-                
+
                 {/* Actions rapides */}
                 {message.quickActions && message.quickActions.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3 ml-4">
@@ -300,7 +272,7 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
             )}
           </div>
         ))}
-        
+
         {/* Texte en cours de génération */}
         {isGenerating && (
           <>
@@ -313,7 +285,7 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
                 </div>
               </div>
             )}
-            
+
             {/* Indicateur de saisie */}
             {!generatedText && (
               <div className="flex mt-3 ml-2 mb-4">
@@ -346,4 +318,4 @@ Y a-t-il autre chose que je puisse faire pour vous ?`,
   );
 };
 
-export default ContextualConversationView; 
+export default ContextualConversationView;

@@ -89,14 +89,6 @@ const menuItems: MenuItem[] = [
     variant: 'popular' as const
   },
   {
-    id: 'oeufs',
-    title: 'Œufs mayonnaise',
-    price: '5,00 €',
-    priceValue: 5.00,
-    image: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?fit=crop',
-    variant: 'popular' as const
-  },
-  {
     id: 'ravioles',
     title: 'Ravioles au choix',
     description: 'Bœuf braisé | Ricotta - Epinard | Bleu - noix | Saumon - Encre de seiche',
