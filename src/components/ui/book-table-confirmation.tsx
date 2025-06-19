@@ -95,13 +95,12 @@ export function BookTableConfirmation({
         </div>
 
         {/* Bell disclaimer */}
-        <div className="text-right">
-          <p className="text-[rgba(101,65,61,0.33)] text-xs font-normal">
-            Bell can make mistakes.
-          </p>
-          <p className="text-[rgba(101,65,61,0.33)] text-xs font-normal">
-            Please double-check responses.
-          </p>
+        <div className="flex justify-between items-start mt-6 space-x-2">
+          <div className="w-2 h-2 bg-[#F2930D] rounded-full mt-1" />
+          <div className="text-[rgba(101,65,61,0.33)] text-xs font-normal leading-snug">
+            <p>Bell can make mistakes.</p>
+            <p>Please double-check responses.</p>
+          </div>
         </div>
       </div>
 
