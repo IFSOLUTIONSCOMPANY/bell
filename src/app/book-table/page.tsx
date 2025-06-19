@@ -1,15 +1,11 @@
 "use client";
 import { useState } from "react";
+import { Header, ChatInput, StatusInfoBar } from "@/components/mobile";
 import {
-  Header,
-  ChatInput,
-  StatusInfoBar
-} from "@/components/mobile";
-import { 
-  BookTableServicePopup, 
-  BookTableConfirmationPopup, 
-  BookTableConfirmation 
-} from '@/components/ui';
+  BookTableServicePopup,
+  BookTableConfirmationPopup,
+  BookTableConfirmation,
+} from "@/components/ui";
 
 interface TimeSlot {
   id: string;
@@ -31,12 +27,12 @@ export default function BookTablePage() {
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   const timeSlots: TimeSlot[] = [
-    { id: '10:00', time: '10:00', available: true },
-    { id: '10:30', time: '10:30', available: true },
-    { id: '11:30', time: '11:30', available: true },
-    { id: '12:00', time: '12:00', available: true },
-    { id: '12:30', time: '12:30', available: true }, // Sélectionné dans le design
-    { id: '13:00', time: '13:00', available: true },
+    { id: "10:00", time: "10:00", available: true },
+    { id: "10:30", time: "10:30", available: true },
+    { id: "11:30", time: "11:30", available: true },
+    { id: "12:00", time: "12:00", available: true },
+    { id: "12:30", time: "12:30", available: true }, // Sélectionné dans le design
+    { id: "13:00", time: "13:00", available: true },
   ];
 
   const handleServiceSelection = (data: BookingData) => {
@@ -58,8 +54,10 @@ export default function BookTablePage() {
     <div className="w-full max-w-[390px] mx-auto bg-[#EFEDE4] min-h-screen relative">
       {/* Header */}
       <Header className="pt-2" />
-      <StatusInfoBar roomNumber="1023" hotelName="Oceania Porte de Versailles" />
-
+      <StatusInfoBar
+        roomNumber="1023"
+        hotelName="Oceania Porte de Versailles"
+      />
       {/* Main Content */}
       <div className="flex-1 pt-20">
         {/* Background content */}
@@ -74,7 +72,6 @@ export default function BookTablePage() {
           </div>
         </div>
       </div>
-
       {/* Service Selection Popup */}
       {showServicePopup && (
         <BookTableServicePopup
@@ -84,7 +81,6 @@ export default function BookTablePage() {
           onBooking={handleServiceSelection}
         />
       )}
-
       {/* Confirmation Popup */}
       {showConfirmationPopup && bookingData && (
         <BookTableConfirmationPopup
@@ -97,7 +93,6 @@ export default function BookTablePage() {
           onConfirm={handleConfirmBooking}
         />
       )}
-
       {/* Final Confirmation */}
       {showFinalConfirmation && bookingData && (
         <BookTableConfirmation
@@ -107,10 +102,10 @@ export default function BookTablePage() {
       )}
 
       {/* Chat Input */}
-      <ChatInput 
+      <ChatInput
         className="absolute bottom-4 left-4 right-4"
         onFocus={() => {}}
       />
     </div>
   );
-} 
+}
